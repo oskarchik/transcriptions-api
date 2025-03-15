@@ -3,7 +3,7 @@ service: transcriptions-api
 provider:
   name: aws
   runtime: nodejs20.x
-  region: us-west-1
+  region: eu-west-1
   stage: dev
   apiGateway:
     binaryMediaTypes:
@@ -13,7 +13,7 @@ provider:
     USER_POOL_ID: ${self:custom.userPoolId}
     APP_CLIENT_ID: ${self:custom.appClientId}
     CLIENT_SECRET: ${self:custom.clientSecret}
-    FILES_TABLE: ${env:FILES_TABLE}
+    TRANSCRIPTIONS_TABLE: ${env:TRANSCRIPTIONS_TABLE}
     AUDIO_BUCKET_NAME: ${env:AUDIO_BUCKET_NAME}
     TRANSCRIPTIONS_BUCKET_NAME: ${env:TRANSCRIPTIONS_BUCKET_NAME}
     TRANSCRIPTIONS_API_KEY: ${self:custom.transcriptionApiKey}
@@ -36,10 +36,11 @@ provider:
         - 's3:PutObject'
         - 's3:GetObject'
         - 's3:ListBucket'
-      Resource: -"arn:aws:s3:::${env:AUDIO_BUCKET_NAME}"
-        -"arn:aws:s3:::${env:AUDIO_BUCKET_NAME}/*"
-        -"arn:aws:s3:::${env:TRANSCRIPTIONS_BUCKET_NAME}"
-        -"arn:aws:s3:::${env:TRANSCRIPTIONS_BUCKET_NAME}/*"
+      Resource:
+        - 'arn:aws:s3:::${env:AUDIO_BUCKET_NAME}'
+        - 'arn:aws:s3:::${env:AUDIO_BUCKET_NAME}/*'
+        - 'arn:aws:s3:::${env:TRANSCRIPTIONS_BUCKET_NAME}'
+        - 'arn:aws:s3:::${env:TRANSCRIPTIONS_BUCKET_NAME}/*'
 
 custom:
   awsRegion: ${env:AWS_REGION}
