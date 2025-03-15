@@ -1,4 +1,4 @@
-import { BaseError } from './BaseError';
+import { BaseError, HTTPCode } from './BaseError';
 
 export class ApiError extends BaseError {
   static DEFAULT_BAD_REQUEST_MESSAGE =

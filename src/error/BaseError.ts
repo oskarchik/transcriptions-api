@@ -1,4 +1,4 @@
-export const HTTTP_CODE = {
+export const HTTP_CODE = {
   OK: 200,
   BAD_REQUEST: 400,
   UNAUTHORIZED: 401,
@@ -9,6 +9,15 @@ export const HTTTP_CODE = {
   INTERNAL: 500,
   UNAVAILABLE_SERVICE: 503,
 } as const;
+type ObjectValues<T> = T[keyof T];
+
+export type HTTPCode = ObjectValues<typeof HTTP_CODE>;
+
+export interface BaseErrorArgs {
+  name?: string;
+  httpCode: HTTPCode;
+  message: string;
+}
 
 export class BaseError extends Error {
   public httpCode: HTTPCode;
