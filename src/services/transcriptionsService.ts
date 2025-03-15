@@ -12,6 +12,14 @@ interface QueryParams {
   lastEvaluatedKey?: string;
 }
 
+interface SignedUrlQueryParams {
+  userId?: string;
+  fileId?: string;
+  fileName?: string;
+  size?: string;
+  action?: string;
+}
+
 const MAX_SIZE = 20 * 1024 * 1024;
 
 export async function getTranscriptions(queryParams: QueryParams) {
@@ -66,6 +74,7 @@ export async function generateSignedUrl(queryParams: SignedUrlQueryParams) {
     }
 
     result = await generateUploadUrl({ userId, fileExtension: extension });
+
     await insertItem({
       fileId: Date.now(),
       userId,
