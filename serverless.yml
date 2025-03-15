@@ -1,0 +1,71 @@
+service: transcriptions-api
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-west-1
+  stage: dev
+  apiGateway:
+    binaryMediaTypes:
+      - 'audio/*'
+
+  environment:
+    USER_POOL_ID: ${self:custom.userPoolId}
+    APP_CLIENT_ID: ${self:custom.appClientId}
+    CLIENT_SECRET: ${self:custom.clientSecret}
+    FILES_TABLE: ${env:FILES_TABLE}
+    AUDIO_BUCKET_NAME: ${env:AUDIO_BUCKET_NAME}
+    TRANSCRIPTIONS_BUCKET_NAME: ${env:TRANSCRIPTIONS_BUCKET_NAME}
+    TRANSCRIPTIONS_API_KEY: ${self:custom.transcriptionApiKey}
+
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'dynamodb:PutItem'
+        - 'dynamodb:GetItem'
+        - 'dynamodb:UpdateItem'
+        - 'dynamodb:DeleteItem'
+        - 'dynamodb:Query'
+        - 'dynamodb:Scan'
+      Resource:
+        - 'arn:aws:dynamodb;${self:custom.awsRegion}:${aws:accountId}:table/${self:custom.transcriptionsTable}'
+        - 'arn:aws:dynamodb;${self:custom.awsRegion}:${aws:accountId}:table/${self:custom.transcriptionsTable}/index/userId-fileId-index'
+
+    - Effect: 'Allow'
+      Action:
+        - 's3:PutObject'
+        - 's3:GetObject'
+        - 's3:ListBucket'
+      Resource: -"arn:aws:s3:::${env:AUDIO_BUCKET_NAME}"
+        -"arn:aws:s3:::${env:AUDIO_BUCKET_NAME}/*"
+        -"arn:aws:s3:::${env:TRANSCRIPTIONS_BUCKET_NAME}"
+        -"arn:aws:s3:::${env:TRANSCRIPTIONS_BUCKET_NAME}/*"
+
+custom:
+  awsRegion: ${env:AWS_REGION}
+  userPoolId: ${env:USER_POOL_ID}
+  appClientId: ${env:APP_CLIENT_ID}
+  clientSecret: ${env:CLIENT_SECRET}
+  audioBucket: ${env:AUDIO_BUCKET_NAME}
+  transcriptionsBucket: ${env:TRANSCRIPTIONS_BUCKET_NAME}
+  transcriptionsTable: ${env:TRANSCRIPTIONS_TABLE}
+  transcriptionApiKey: ${env:TRANSCRIPTIONS_API_KEY}
+  serverless-offline:
+    httpPort: 3005
+
+functions:
+  fileUploaded:
+    handler: s3Handler.fileUploaded
+    timeout: 900
+    events:
+      - s3:
+          bucket: ${self:custom.audioBucket}
+          event: s3:ObjectCreated:Put
+
+  api:
+    handler: src/index.handler
+    events:
+      - httpApi: '*'
+
+plugins:
+  - serverless-offline

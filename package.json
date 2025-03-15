@@ -1,0 +1,42 @@
+{
+  "name": "aws-node-express-dynamodb-api-project",
+  "version": "1.0.0",
+  "description": "",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.147",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.10",
+    "@typescript-eslint/eslint-plugin": "^8.26.1",
+    "@typescript-eslint/parser": "^8.26.1",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "eslint-plugin-prettier": "^5.2.3",
+    "jiti": "^2.4.2",
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.5.3",
+    "serverless-offline": "^14.4.0",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cognito-identity-provider": "^3.768.0",
+    "@aws-sdk/client-dynamodb": "^3.767.0",
+    "@aws-sdk/lib-dynamodb": "^3.767.0",
+    "@speechmatics/batch-client": "^5.0.1",
+    "aws-lambda": "^1.0.7",
+    "aws-sdk": "^2.1692.0",
+    "axios": "^1.8.3",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "serverless-http": "^3.2.0"
+  },
+  "scripts": {
+    "dev": "serverless offline",
+    "lint": "eslint . --ext .ts .js",
+    "format": "prettier --write",
+    "staged": "lint-staged"
+  },
+  "lint-staged": {
+    "**/*.js": "eslint --fix",
+    "**/*.{json,md,yml}": "prettier --write"
+  }
+}
