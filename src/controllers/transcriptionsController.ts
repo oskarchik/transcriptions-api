@@ -27,7 +27,20 @@ export async function getSignedUrl(
   next: NextFunction,
 ) {
   try {
-    const response = await generateSignedUrl(req.query);
+    const { userId, fileId, fileName, size, action } = req.query as {
+      userId?: string;
+      fileId?: string;
+      fileName?: string;
+      size?: string;
+      action?: 'upload' | 'download';
+    };
+    const response = await generateSignedUrl({
+      userId,
+      fileId,
+      fileName,
+      size,
+      action,
+    });
 
     return res.send({ signedUrl: response });
   } catch (error) {

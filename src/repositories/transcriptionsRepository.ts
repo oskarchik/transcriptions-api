@@ -2,11 +2,13 @@ import {
   DynamoDBClient,
   QueryCommandInput,
   ScanCommandInput,
+  PutItemCommandInput,
 } from '@aws-sdk/client-dynamodb';
 import {
   QueryCommand,
   ScanCommand,
   DynamoDBDocumentClient,
+  PutCommand,
 } from '@aws-sdk/lib-dynamodb';
 
 import { S3 } from 'aws-sdk';
@@ -30,6 +32,15 @@ interface SignedUrlParams {
   userId: string;
   fileExtension: string;
   fileId: string;
+}
+
+interface TranscriptionEntity {
+  fileId: number;
+  userId: string;
+  name: string;
+  status: number;
+  type: 'wav' | 'mp3';
+  updatedAt: string;
 }
 
 export async function getTranscriptionsFromDB(params: TranscriptionsParams) {
@@ -132,4 +143,13 @@ export async function generateDownloadUrl(
   const signedUrl = await s3.getSignedUrlPromise('getObject', s3Params);
 
   return signedUrl;
+}
+
+export async function insertItem(params: TranscriptionEntity) {
+  const queryParams = {
+    TableName: TRANSCRIPTIONS_TABLE,
+    Item: params,
+  };
+  const command = new PutCommand(queryParams);
+  return docClient.send(command);
 }
