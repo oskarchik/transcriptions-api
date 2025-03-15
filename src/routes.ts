@@ -1,10 +1,15 @@
 // src/routes/apiRoutes.ts
 
 import { Router } from 'express';
-import { searchTranscriptions } from './controllers/transcriptionsController';
+import {
+  searchTranscriptions,
+  getSignedUrl,
+} from './controllers/transcriptionsController';
 
 const router = Router();
 
-router.get('/', searchTranscriptions);
+router.get('/transcriptions', searchTranscriptions);
+
+router.get('/signed-url', getSignedUrl);
 
 export default router;

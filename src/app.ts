@@ -7,6 +7,7 @@ config();
 export function createApp() {
   const app = express();
 
-  app.use('/transcriptions', router);
+  app.use('/', router);
+
   return app;
 }
