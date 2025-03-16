@@ -9,7 +9,9 @@ provider:
     binaryMediaTypes:
       - 'audio/*'
 
+   
   environment:
+    VERSION: ${self:custom.version}
     USER_POOL_ID: ${self:custom.userPoolId}
     APP_CLIENT_ID: ${self:custom.appClientId}
     CLIENT_SECRET: ${self:custom.clientSecret}
@@ -43,6 +45,7 @@ provider:
         - 'arn:aws:s3:::${env:TRANSCRIPTIONS_BUCKET_NAME}/*'
 
 custom:
+  version: ${env:VERSION}
   awsRegion: ${env:AWS_REGION}
   userPoolId: ${env:USER_POOL_ID}
   appClientId: ${env:APP_CLIENT_ID}
@@ -67,6 +70,7 @@ functions:
     handler: src/index.handler
     events:
       - httpApi: '*'
+       
 
 plugins:
   - serverless-offline
