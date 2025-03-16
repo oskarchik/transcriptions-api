@@ -12,13 +12,12 @@ export function createApp() {
   const app = express();
 
   const corsOptions = {
-    origin: '*',
+    origin: 'main.d6npjntcde9or.amplifyapp.com',
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
     
   }
-
   app.use(cors(corsOptions))
   app.use(helmet());
   app.use(express.json());
