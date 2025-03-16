@@ -1,13 +1,6 @@
-import express from 'express';
 import serverless from 'serverless-http';
-import { config } from 'dotenv';
+import { createApp } from './app';
 
-config();
-
-const app = express();
-
-app.get('/', async (req, res) => {
-  res.send(process.env.USER_POOL_ID);
-});
+const app = createApp();
 
 export const handler = serverless(app);
