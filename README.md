@@ -137,7 +137,7 @@ Retrieves a list of transcriptions for a user.
   - 1: Processing
   - 2: Transcribing
   - 3: Completed
-  - -1: Error
+  - 4: Error
 
 ### Get Signed URL
 
