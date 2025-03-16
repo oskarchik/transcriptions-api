@@ -6,6 +6,7 @@ import { BatchClient } from '@speechmatics/batch-client'; // API externa de tran
 import { PassThrough } from 'stream';
 
 const AUDIO_BUCKET_NAME = process.env.AUDIO_BUCKET_NAME as string;
+const TRANSCRIPTIONS_BUCKET_NAME = process.env.TRANSCRIPTIONS_BUCKET_NAME as string;
 const TRANSCRIPTIONS_TABLE = process.env.TRANSCRIPTIONS_TABLE as string;
 const TRANSCRIPTIONS_API_KEY = process.env.TRANSCRIPTIONS_API_KEY as string;
 
@@ -25,6 +26,7 @@ export async function processFileUpload(event: S3Event) {
     const s3Key = decodeURIComponent(
       s3Object.s3.object.key.replace(/\+/g, ' '),
     );
+
 
     if (!s3Key) throw new Error('File name error');
 
@@ -67,23 +69,28 @@ export async function processFileUpload(event: S3Event) {
 
     const transcriptionFileName = `${fileId}.txt`;
     const transcriptionKey = `${userId}/transcriptions/${transcriptionFileName}`;
+
+
     const transcriptionStream = new PassThrough();
     transcriptionStream.end(transcriptionText);
 
     const s3UploadParams = {
-      Bucket: AUDIO_BUCKET_NAME,
+      Bucket: TRANSCRIPTIONS_BUCKET_NAME,
       Key: transcriptionKey,
       Body: transcriptionStream,
       ContentType: 'text/plain',
       ContentDisposition: 'attachment; filename=transcription.txt',
     };
+
+
     await s3.upload(s3UploadParams).promise();
+
 
     await updateTranscriptionStatus(key, 3);
   } catch (error) {
     console.error('Error processing file:', error);
     if (key) {
-      await updateTranscriptionStatus(key, -1);
+      await updateTranscriptionStatus(key, 4);
     }
     throw new Error('Error processing file');
   }
