@@ -72,11 +72,12 @@ export async function generateSignedUrl(queryParams: SignedUrlQueryParams) {
       console.log('invalid format ');
       throw ApiError.badRequest();
     }
+    const fileId = Date.now();
 
-    result = await generateUploadUrl({ userId, fileExtension: extension });
+    result = await generateUploadUrl({ userId, fileExtension: extension, fileId });
 
     await insertItem({
-      fileId: Date.now(),
+      fileId: fileId,
       userId,
       name: file,
       status: 0,
