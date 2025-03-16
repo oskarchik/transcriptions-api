@@ -110,11 +110,10 @@ export async function getTranscriptionsFromDB(params: TranscriptionsParams) {
 }
 
 export async function generateUploadUrl(
-  params: Pick<SignedUrlParams, 'userId' | 'fileExtension'>,
+  params: Pick<SignedUrlParams, 'userId' | 'fileExtension' | 'fileId'>,
 ) {
-  const { userId, fileExtension } = params;
+  const { userId, fileExtension, fileId } = params;
 
-  const fileId = Date.now();
   const s3Key = `${userId}/audios/${fileId}.${fileExtension}`;
 
   const s3Params = {
