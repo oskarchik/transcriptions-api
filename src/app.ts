@@ -13,6 +13,13 @@ export function createApp() {
   app.use(helmet());
   app.use(express.json());
 
+  app.get('/health', (req, res) => {
+    res.send({
+      message: 'ok',
+      time: new Date().toISOString()
+    })
+  })
+
   app.use(`/api/${VERSION}/`, router);
 
   app.use(errorHandler);
