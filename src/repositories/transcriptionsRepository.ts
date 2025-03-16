@@ -60,7 +60,7 @@ export async function getTranscriptionsFromDB(params: TranscriptionsParams) {
       ExclusiveStartKey: lastEvaluatedKey
         ? JSON.parse(lastEvaluatedKey)
         : undefined,
-      ScanIndexForward: false,
+      ScanIndexForward: true,
     };
     command = new QueryCommand(queryParams);
   } else {
@@ -70,12 +70,12 @@ export async function getTranscriptionsFromDB(params: TranscriptionsParams) {
       ExclusiveStartKey: lastEvaluatedKey
         ? JSON.parse(lastEvaluatedKey)
         : undefined,
+      ScanIndexForward: true,
     };
     command = new ScanCommand(queryParams);
   }
   try {
     let result = await docClient.send(command);
-    console.log('🚀 ~ getTranscriptionsFromDB ~ result:', result);
 
     let items = result.Items || [];
     let allItems = [...items];
@@ -97,9 +97,10 @@ export async function getTranscriptionsFromDB(params: TranscriptionsParams) {
     }
 
     allItems = allItems.slice(0, limit);
+    const orderedResults = allItems.sort((a, b) => b.fileId - a.fileId);
 
     return {
-      items: allItems,
+      items: orderedResults,
       lastEvaluatedKey: result.LastEvaluatedKey,
     };
   } catch (error) {
@@ -113,7 +114,7 @@ export async function generateUploadUrl(
 ) {
   const { userId, fileExtension } = params;
 
-  const fileId = new Date();
+  const fileId = Date.now();
   const s3Key = `${userId}/audios/${fileId}.${fileExtension}`;
 
   const s3Params = {
@@ -123,7 +124,7 @@ export async function generateUploadUrl(
     ContentType: `audio/${fileExtension}`,
   };
 
-  const signedUrl = s3.getSignedUrlPromise('putObject', s3Params);
+  const signedUrl = await s3.getSignedUrlPromise('putObject', s3Params);
 
   return signedUrl;
 }
