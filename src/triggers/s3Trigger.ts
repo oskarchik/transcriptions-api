@@ -1,4 +1,3 @@
-// src/lambda/s3TriggerHandler.ts
 import { S3Event } from 'aws-lambda';
 import { processFileUpload } from '../services/s3Service';
 

@@ -34,6 +34,7 @@ export async function getSignedUrl(
       size?: string;
       action?: 'upload' | 'download';
     };
+
     const response = await generateSignedUrl({
       userId,
       fileId,

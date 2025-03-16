@@ -75,6 +75,7 @@ export async function getTranscriptionsFromDB(params: TranscriptionsParams) {
   }
   try {
     let result = await docClient.send(command);
+    console.log('🚀 ~ getTranscriptionsFromDB ~ result:', result);
 
     let items = result.Items || [];
     let allItems = [...items];
@@ -136,7 +137,7 @@ export async function generateDownloadUrl(
 
   const s3Params = {
     Bucket: TRANSCRIPTIONS_BUCKET_NAME,
-    key: s3Key,
+    Key: s3Key,
     Expires: 60,
   };
 
