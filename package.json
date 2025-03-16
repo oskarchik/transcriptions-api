@@ -36,7 +36,7 @@
   },
   "scripts": {
     "dev": "nodemon --exec 'serverless offline start' --watch src",
-    "lint": "eslint . --ext .ts .js",
+    "lint": "eslint . --ext .ts, .js",
     "format": "prettier --write",
     "staged": "lint-staged"
   },
