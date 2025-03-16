@@ -6,10 +6,11 @@ import {
   getSignedUrl,
 } from './controllers/transcriptionsController';
 
+import { authenticate } from './middlewares/auth';
 const router = Router();
 
-router.get('/transcriptions', searchTranscriptions);
+router.get('/transcriptions', authenticate, searchTranscriptions);
 
-router.get('/signed-url', getSignedUrl);
+router.get('/signed-url', authenticate, getSignedUrl);
 
 export default router;
