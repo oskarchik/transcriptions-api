@@ -1,139 +1,288 @@
-<!--
-title: 'Serverless Framework Node Express API service backed by DynamoDB on AWS'
-description: 'This template demonstrates how to develop and deploy a simple Node Express API service backed by DynamoDB running on AWS Lambda using the traditional Serverless Framework.'
-layout: Doc
-framework: v3
-platform: AWS
-language: nodeJS
-priority: 1
-authorLink: 'https://github.com/serverless'
-authorName: 'Serverless, inc.'
-authorAvatar: 'https://avatars1.githubusercontent.com/u/13742415?s=200&v=4'
--->
+# Transcriptions API
 
-# Serverless Framework Node Express API on AWS
+A serverless API built with Node.js, Express, and AWS services for handling audio file transcriptions. This service allows users to upload audio files and get their transcriptions using Speechmatics API integration.
 
-This template demonstrates how to develop and deploy a simple Node Express API service, backed by DynamoDB database, running on AWS Lambda using the traditional Serverless Framework.
+## Features
 
-## Anatomy of the template
+- Serverless architecture using AWS Lambda and API Gateway
+- Audio file upload to S3
+- Automatic transcription processing
+- User authentication with AWS Cognito
+- DynamoDB for storing transcription metadata
+- Express.js for API routing
+- TypeScript support
 
-This template configures a single function, `api`, which is responsible for handling all incoming requests thanks to the `httpApi` event. To learn more about `httpApi` event configuration options, please refer to [httpApi event docs](https://www.serverless.com/framework/docs/providers/aws/events/http-api/). As the event is configured in a way to accept all incoming requests, `express` framework is responsible for routing and handling requests internally. Implementation takes advantage of `serverless-http` package, which allows you to wrap existing `express` applications. To learn more about `serverless-http`, please refer to corresponding [GitHub repository](https://github.com/dougmoscrop/serverless-http). Additionally, it also handles provisioning of a DynamoDB database that is used for storing data about users. The `express` application exposes two endpoints, `POST /users` and `GET /user/{userId}`, which allow to create and retrieve users.
+## Prerequisites
 
-## Usage
+- Node.js (v20.x)
+- AWS CLI configured with appropriate credentials
+- Serverless Framework CLI
+- An AWS account with necessary services (S3, DynamoDB, Cognito)
+- Speechmatics API key
 
-### Deployment
+## Environment Variables
 
-Install dependencies with:
+Create a `.env` file in the root directory with the following variables:
 
+```env
+USER_POOL_ID=your_cognito_user_pool_id
+APP_CLIENT_ID=your_cognito_app_client_id
+AWS_REGION=your_aws_region
+CLIENT_SECRET=your_client_secret
+TRANSCRIPTIONS_BUCKET_NAME=your_transcriptions_bucket_name
+AUDIO_BUCKET_NAME=your_audio_bucket_name
+TRANSCRIPTIONS_API_KEY=your_speechmatics_api_key
+TRANSCRIPTIONS_TABLE=your_dynamodb_table_name
+VERSION=v1
 ```
+
+## Installation
+
+1. Clone the repository
+2. Install dependencies:
+
+```bash
 npm install
 ```
 
-and then deploy with:
+## Development
+
+To run the project locally:
+
+```bash
+npm run dev
+```
+
+This will start the serverless-offline server on port 3005.
+
+## Scripts
+
+- `npm run dev` - Start development server with hot reload
+- `npm run lint` - Run ESLint
+- `npm run format` - Format code with Prettier
+- `npm run staged` - Run lint-staged for pre-commit hooks
+
+## Project Structure
 
 ```
+src/
+├── app.ts           # Express app configuration
+├── index.ts         # Lambda handler
+├── routes.ts        # API routes
+├── controllers/     # Route controllers
+├── services/        # Business logic
+├── repositories/    # Data access layer
+├── middlewares/     # Express middlewares
+├── triggers/        # AWS Lambda triggers
+└── error/           # Error handling
+```
+
+## AWS Resources
+
+The project uses the following AWS services:
+
+- **API Gateway**: HTTP API endpoints
+- **Lambda**: Serverless functions
+- **S3**: Audio file and transcription storage
+- **DynamoDB**: Metadata storage
+- **Cognito**: User authentication
+
+## IAM Permissions
+
+The service requires the following AWS permissions:
+
+- DynamoDB: PutItem, GetItem, UpdateItem, DeleteItem, Query, Scan
+- S3: PutObject, GetObject, ListBucket
+
+## API Endpoints
+
+All endpoints require authentication using AWS Cognito. Include the authentication token in the `Authorization` header.
+
+### Get Transcriptions
+
+```http
+GET /transcriptions
+```
+
+Retrieves a list of transcriptions for a user.
+
+**Query Parameters:**
+
+- `userId` (optional): Filter transcriptions by user ID
+- `limit` (optional): Number of items to return (default: 10)
+- `lastEvaluatedKey` (optional): Key for pagination
+
+**Response:**
+
+```json
+{
+  "items": [
+    {
+      "fileId": "123456789",
+      "userId": "user123",
+      "name": "audio_file",
+      "status": 3,
+      "type": "wav",
+      "updatedAt": "2024-03-16T10:30:00Z"
+    }
+  ],
+  "lastEvaluatedKey": "..." // Pagination token
+}
+```
+
+**Status Codes:**
+
+- `status`: Transcription status
+  - 0: Initialized
+  - 1: Processing
+  - 2: Transcribing
+  - 3: Completed
+  - -1: Error
+
+### Get Signed URL
+
+```http
+GET /signed-url
+```
+
+Generates a pre-signed URL for uploading audio files to S3 or downloading transcriptions.
+
+**Query Parameters:**
+
+- `userId` (required): User ID
+- `action` (required): Either 'upload' or 'download'
+- `fileId` (required for download): ID of the file to download
+- `fileName` (required for upload): Name of the file to upload (must end in .wav or .mp3)
+- `size` (required for upload): File size in MB (max 20MB)
+
+**Response:**
+
+```json
+{
+  "signedUrl": "https://..."
+}
+```
+
+**Upload Restrictions:**
+
+- Maximum file size: 20MB
+- Supported formats: .wav, .mp3
+- Maximum filename length: 100 characters
+
+**Error Responses:**
+
+```json
+{
+  "message": "Error message"
+}
+```
+
+### Automatic Transcription
+
+When an audio file is uploaded to S3 using the signed URL:
+
+1. The file is automatically processed
+2. Status is updated in DynamoDB
+3. Transcription is generated using Speechmatics API
+4. The transcription file is stored in S3
+5. Status is updated to complete (3) or error (-1)
+
+You can track the transcription status by polling the `/transcriptions` endpoint.
+
+## Deployment
+
+### Prerequisites
+
+1. Ensure you have the following AWS resources set up:
+
+   - Cognito User Pool and App Client
+   - S3 buckets for audio files and transcriptions
+   - DynamoDB table for transcription metadata
+
+2. Configure AWS credentials:
+
+```bash
+aws configure
+```
+
+### Environment Setup
+
+1. Create a `.env` file in the project root:
+
+```bash
+cp env.example .env
+```
+
+2. Fill in all required environment variables:
+   - `USER_POOL_ID`: Your Cognito User Pool ID
+   - `APP_CLIENT_ID`: Your Cognito App Client ID
+   - `AWS_REGION`: Your AWS region (e.g., eu-west-1)
+   - `CLIENT_SECRET`: Your Cognito App Client secret
+   - `TRANSCRIPTIONS_BUCKET_NAME`: S3 bucket for transcription files
+   - `AUDIO_BUCKET_NAME`: S3 bucket for audio files
+   - `TRANSCRIPTIONS_API_KEY`: Your Speechmatics API key
+   - `TRANSCRIPTIONS_TABLE`: DynamoDB table name
+   - `VERSION`: API version (e.g., v1)
+
+### Deployment Steps
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Build the TypeScript code:
+
+```bash
+npm run build
+```
+
+3. Deploy to AWS:
+
+```bash
 serverless deploy
 ```
 
-After running deploy, you should see output similar to:
+4. For a specific stage (e.g., production):
 
 ```bash
-Deploying aws-node-express-dynamodb-api-project to stage dev (us-east-1)
-
-✔ Service deployed to stack aws-node-express-dynamodb-api-project-dev (196s)
-
-endpoint: ANY - https://xxxxxxxxxx.execute-api.us-east-1.amazonaws.com
-functions:
-  api: aws-node-express-dynamodb-api-project-dev-api (766 kB)
+serverless deploy --stage production
 ```
 
-_Note_: In current form, after deployment, your API is public and can be invoked by anyone. For production deployments, you might want to configure an authorizer. For details on how to do that, refer to [`httpApi` event docs](https://www.serverless.com/framework/docs/providers/aws/events/http-api/). Additionally, in current configuration, the DynamoDB table will be removed when running `serverless remove`. To retain the DynamoDB table even after removal of the stack, add `DeletionPolicy: Retain` to its resource definition.
+### Post-Deployment
 
-### Invocation
+After successful deployment, you will receive:
 
-After successful deployment, you can create a new user by calling the corresponding endpoint:
+- API Gateway endpoint URL
+- Lambda function information
+- S3 bucket configurations
+- Other AWS resource details
+
+Save these details for future reference and for configuring your client applications.
+
+### Monitoring and Logs
+
+To view Lambda function logs:
 
 ```bash
-curl --request POST 'https://xxxxxx.execute-api.us-east-1.amazonaws.com/users' --header 'Content-Type: application/json' --data-raw '{"name": "John", "userId": "someUserId"}'
+serverless logs -f api
+serverless logs -f fileUploaded
 ```
 
-Which should result in the following response:
+To tail the logs in real-time:
 
 ```bash
-{"userId":"someUserId","name":"John"}
+serverless logs -f api -t
+serverless logs -f fileUploaded -t
 ```
 
-You can later retrieve the user by `userId` by calling the following endpoint:
+### Removing the Service
+
+To remove all deployed resources:
 
 ```bash
-curl https://xxxxxxx.execute-api.us-east-1.amazonaws.com/users/someUserId
+serverless remove
 ```
 
-Which should result in the following response:
-
-```bash
-{"userId":"someUserId","name":"John"}
-```
-
-If you try to retrieve user that does not exist, you should receive the following response:
-
-```bash
-{"error":"Could not find user with provided \"userId\""}
-```
-
-### Local development
-
-It is also possible to emulate DynamoDB, API Gateway and Lambda locally using the `serverless-dynamodb-local` and `serverless-offline` plugins. In order to do that, run:
-
-```bash
-serverless plugin install -n serverless-dynamodb-local
-serverless plugin install -n serverless-offline
-```
-
-It will add both plugins to `devDependencies` in `package.json` file as well as will add it to `plugins` in `serverless.yml`. Make sure that `serverless-offline` is listed as last plugin in `plugins` section:
-
-```
-plugins:
-  - serverless-dynamodb-local
-  - serverless-offline
-```
-
-You should also add the following config to `custom` section in `serverless.yml`:
-
-```
-custom:
-  (...)
-  dynamodb:
-    start:
-      migrate: true
-    stages:
-      - dev
-```
-
-Additionally, we need to reconfigure `AWS.DynamoDB.DocumentClient` to connect to our local instance of DynamoDB. We can take advantage of `IS_OFFLINE` environment variable set by `serverless-offline` plugin and replace:
-
-```javascript
-const dynamoDbClient = new AWS.DynamoDB.DocumentClient();
-```
-
-with the following:
-
-```javascript
-const dynamoDbClientParams = {};
-if (process.env.IS_OFFLINE) {
-  dynamoDbClientParams.region = 'localhost';
-  dynamoDbClientParams.endpoint = 'http://localhost:8000';
-}
-const dynamoDbClient = new AWS.DynamoDB.DocumentClient(dynamoDbClientParams);
-```
-
-After that, running the following command with start both local API Gateway emulator as well as local instance of emulated DynamoDB:
-
-```bash
-serverless offline start
-```
-
-To learn more about the capabilities of `serverless-offline` and `serverless-dynamodb-local`, please refer to their corresponding GitHub repositories:
-
-- https://github.com/dherault/serverless-offline
-- https://github.com/99x/serverless-dynamodb-local
+**Note:** This will delete all resources created by the service. Make sure to backup any important data before removing the service.
