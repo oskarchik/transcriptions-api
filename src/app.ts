@@ -4,10 +4,13 @@ import router from './routes';
 
 config();
 
+const VERSION = process.env.VERSION;
 export function createApp() {
   const app = express();
 
-  app.use('/', router);
+  app.use(express.json());
+
+  app.use(`/api/${VERSION}/`, router);
 
   return app;
 }
