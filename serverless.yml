@@ -28,8 +28,8 @@ provider:
         - 'dynamodb:Query'
         - 'dynamodb:Scan'
       Resource:
-        - 'arn:aws:dynamodb;${self:custom.awsRegion}:${aws:accountId}:table/${self:custom.transcriptionsTable}'
-        - 'arn:aws:dynamodb;${self:custom.awsRegion}:${aws:accountId}:table/${self:custom.transcriptionsTable}/index/userId-fileId-index'
+        - 'arn:aws:dynamodb:${self:custom.awsRegion}:${aws:accountId}:table/${self:custom.transcriptionsTable}'
+        - 'arn:aws:dynamodb:${self:custom.awsRegion}:${aws:accountId}:table/${self:custom.transcriptionsTable}/index/userId-fileId-index'
 
     - Effect: 'Allow'
       Action:
