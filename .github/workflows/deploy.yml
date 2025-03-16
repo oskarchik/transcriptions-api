@@ -47,7 +47,7 @@ jobs:
       # Run ESLint to check code style and fix issues
       - name: Run ESLint
         run: |
-          npx eslint src --fix  # The --fix flag attempts to automatically fix lint issues
+          npx eslint src --ext .ts,.js --no-ignore # The --fix flag attempts to automatically fix lint issues
 
       # Run Prettier to check code formatting
       - name: Run Prettier
