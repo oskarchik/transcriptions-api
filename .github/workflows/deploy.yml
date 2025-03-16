@@ -36,13 +36,13 @@ jobs:
           npm install -g serverless  # Install Serverless Framework
 
       # Cache ESLint and Prettier to speed up linting and formatting
-      - name: Cache ESLint and Prettier
-        uses: actions/cache@v2
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-eslint-prettier-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-eslint-prettier-
+      # - name: Cache ESLint and Prettier
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.npm
+      #     key: ${{ runner.os }}-eslint-prettier-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-eslint-prettier-
 
       # Run ESLint to check code style and fix issues
       - name: Run ESLint
